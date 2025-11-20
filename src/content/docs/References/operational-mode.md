@@ -1,7 +1,7 @@
 ---
-title: Operational Mode Reference
+title: Operational Mode
 description: Learn a technical overview of Amp's Operational Modes
-slug: operational-mode
+slug: /references/operational-mode
 category: reference
 ---
 

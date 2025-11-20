@@ -1,6 +1,8 @@
 ---
 title: Concepts
-description: Learn a technical overview of Amp
+description: Overview of Amp Basics
+slug: /references/concepts
+category: reference
 ---
 
 ## Overview

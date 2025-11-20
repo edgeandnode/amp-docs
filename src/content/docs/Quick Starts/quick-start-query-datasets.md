@@ -1,7 +1,7 @@
 ---
 title: Query Blockchain Datasets
 description: Step-by-step guide to exploring Ethereum mainnet data using Amp Playground and the Amp.
-slug: amp-registry-dataset
+slug: amp/quickstart/querydatasets
 category: how-to-guide
 ---
 
@@ -366,3 +366,7 @@ WHERE from_address = LOWER('0xMixedCaseInput')
 - `DATE`(block_timestamp)`
 - `COUNT(*), SUM(), AVG()`
 - `LOWER(address)`
+
+## References
+
+- [SQL UDF](/amp/reference/sqludf)

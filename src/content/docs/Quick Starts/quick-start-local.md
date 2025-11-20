@@ -1,7 +1,7 @@
 ---
 title: Quickstart Locally
 description: Build with Amp locally
-slug: quickstart/locally
+slug: amp/quickstart/locally
 command: docker-compose
 category: quickstart
 ---
