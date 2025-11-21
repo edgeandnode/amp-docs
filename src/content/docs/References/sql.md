@@ -293,54 +293,6 @@ Dynamic arrays use `List` instead of `FixedSizeList`.
 | Addresses                     | `FixedSizeBinary(20)` | 20 bytes                              |
 | Transaction hashes            | `FixedSizeBinary(32)` | 32 bytes                              |
 
-### Nullable Fields
-
-**From event data:** Usually `nullable: true`
-
-```json
-{
-  "name": "reserve",
-  "type": { "FixedSizeBinary": 20 },
-  "nullable": true
-}
-```
-
-**System fields:** Usually `nullable: false`
-
-```json
-{
-  "name": "block_num",
-  "type": "UInt64",
-  "nullable": false
-}
-```
-
-## Common Mistakes
-
-### Incorrect
-
-```sql
-SELECT _block_num
-```
-
-### Correct
-
-```sql
-SELECT block_num
-```
-
-### Incorrect Signature
-
-```sql
-evm_topic('Transfer(address indexed from, address indexed to, uint256 value)')
-```
-
-### Correct
-
-```sql
-evm_topic('Transfer(address,address,uint256)')
-```
-
 ### Mismatched Signature in decode
 
 ```sql
@@ -368,7 +320,7 @@ WHERE l.address = '0x1234...'  -- String literal
 ### Correct Type
 
 ```sql
-WHERE l.address = arrow_cast(x'1234...', 'FixedSizeBinary(20)')  --
+WHERE l.address = x'1234...'
 ```
 
 ## Advanced Patterns
@@ -409,19 +361,6 @@ FROM (
 )
 WHERE amount_numeric > 1000
 ```
-
-## Validation Checklist
-
-Before deploying a query:
-
-- [ ] Event signature in `evm_topic()` matches contract ABI
-- [ ] `indexed` parameters in `evm_decode()` match ABI
-- [ ] `evm_decode()` parameter order matches ABI
-- [ ] Contract addresses use `arrow_cast(x'...', 'FixedSizeBinary(20)')`
-- [ ] `_block_num` NOT in SELECT clause
-- [ ] All event field accesses use bracket notation: `event['field']`
-- [ ] Type casts match schema definitions
-- [ ] Array types have correct size/structure
 
 ## Quick Examples
 
@@ -482,40 +421,4 @@ SELECT
   event['amount1Out'] AS amount1_out,
   arrow_cast(event['to'], 'FixedSizeBinary(20)') AS to_address
 FROM decoded
-```
-
-## Getting Event Signatures
-
-### Etherscan
-
-1. Open contract page
-2. Click "Contract" tab
-3. View "Events" section in ABI
-4. Copy event signature
-
-### From ABI
-
-```json
-{
-  "anonymous": false,
-  "inputs": [
-    { "indexed": true, "name": "from", "type": "address" },
-    { "indexed": true, "name": "to", "type": "address" },
-    { "indexed": false, "name": "value", "type": "uint256" }
-  ],
-  "name": "Transfer",
-  "type": "event"
-}
-```
-
-**Convert to signature:**
-
-```
-Transfer(address indexed from,address indexed to,uint256 value)
-```
-
-**Convert to topic:**
-
-```
-Transfer(address,address,uint256)
 ```
