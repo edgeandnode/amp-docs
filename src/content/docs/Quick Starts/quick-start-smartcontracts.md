@@ -18,7 +18,7 @@ Make sure you have Docker running. Then install:
 - Node.js (v22+)
 - Pnpm (v10+)
 
-> Verify with node --version and pnpm --version. Older versions may cause issues.
+> Verify with node `--version` and pnpm `--version`. Older versions may cause issues.
 
 # Foundry
 
@@ -201,5 +201,3 @@ On hosted instance (https://playground.amp.thegraph.com/)
 - **Arbitrum** mainnet
 - **Base** mainnet
 - **Base** Sepolia
-
-Roadmap includes all major chains.
