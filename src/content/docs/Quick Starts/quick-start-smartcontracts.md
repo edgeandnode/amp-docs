@@ -9,6 +9,8 @@ Query your smart contracts with SQL. No backend, no indexers, no setup code.
 
 Amp turns Solidity events into SQL tables instantly. Deploy, emit events, and query them right away. Perfect for rapid prototyping, dashboards, analytics, and AI agents.
 
+> This guide uses the TypeScript SDK.
+
 ## 1. Install Prerequisites
 
 Make sure you have Docker running. Then install:
