@@ -369,4 +369,4 @@ WHERE from_address = LOWER('0xMixedCaseInput')
 
 ## References
 
-- [SQL UDF](/amp/reference/sqludf)
+- [SQL UDF](/references/sqludf)

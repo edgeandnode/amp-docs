@@ -1,10 +1,8 @@
 ---
-title: Troubleshooting Guide
+title: Troubleshooting
 slug: how-to/troubleshoot
 category: how-to-guide
 ---
-
-##
 
 A collection of common issues and fast, actionable fixes when working with Amp. Each section includes the cause and the steps to resolve it.
 

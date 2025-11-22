@@ -1,8 +1,8 @@
 ---
-title: Amp Operational Modes & Deployment
-description: Learn how to run Amp in single-node or distributed mode and choose the right deployment pattern for your environment.
-slug: how-to/operational modes
-category: how-to-guide
+title: Operational Modes & Deployment Patterns
+description: Learn how about Amp's different operational modes and choose the right deployment pattern for your environment.
+slug: references/operationalmodes
+category: reference
 ---
 
 This page is a technical reference for Amp's operational modes, components, and deployment patterns. It’s intended for engineers designing, deploying, or operating Amp in development and production environments.

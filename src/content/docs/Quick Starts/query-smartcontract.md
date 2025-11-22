@@ -1,21 +1,29 @@
 ---
-title: Quickstart Ampup
+title: Query Smart Contracts with SQL
 description: Query smart contracts with SQL
 slug: quickstart/querysmartcontracts
 category: quickstart
 ---
 
-Amp automatically transforms your smart contract events into SQL-queryable datasets the moment those events are emitted. There’s no backend to deploy, no indexing code to maintain, and no configuration overhead. Deploy your contract, trigger events, and query the resulting tables immediately using standard SQL. This lets you build real-time dashboards, analytics pipelines, and data-driven applications with the tooling and workflows you already use.
+Amp automatically transforms your smart contract events into SQL-queryable datasets the moment those events are emitted.
 
-Perfect for prototypes, and production applications that need fast access to on-chain data
+## Overview
 
-This quickstart template walks you from install to your first on-chain SQL query in minutes. You can:
+This quickstart template walks you from install to your first on-chain SQL query in minutes. Perfect for prototypes, and production applications that need fast access to on-chain data.
+
+You can:
 
 - Query blockchain data using SQL (both from the CLI and in your app)
 - Create custom datasets by combining and transforming on-chain data
 - Build a React app that displays live blockchain data
 
-> To understand the specifics, see (Ampup Basics)[]/
+Benefits:
+
+- There’s no backend to deploy, no indexing code to maintain, and no configuration overhead.
+- Deploy your contract, trigger events, and query the resulting tables immediately using standard SQL.
+- Build real-time dashboards, analytics pipelines, and data-driven applications with the tooling and workflows you already use.
+
+> To understand the specifics, see [Smart Contract Reference](/references/contractsql)
 
 ## 1. Install Prerequisites
 
@@ -161,13 +169,13 @@ pnpm amp query 'SELECT * FROM anvil.logs WHERE address = 0xYOUR_CONTRACT_ADDRESS
 
 ## 6. Query Amp from Your App
 
-The frontend (`app/src`) shows how to query Amp datasets from TypeScript. See [`app/src/components/IncrementTable.tsx`](app/src/components/IncrementTable.tsx) for a complete example.
+The frontend (`app/src`) shows how to query Amp datasets from TypeScript. See [`app/src/components/IncrementTable.tsx`](https://github.com/edgeandnode/amp-demo/blob/main/app/src/components/IncrementTable.tsx) for a complete example.
 
 ## 7. Hosted Environment
 
 Amp easily transitions from local development to developing on datasets located in a hosted environment.
 
-- Follow the (hosted environment)[guide] to transition Amp from local datasets to published datasets hosted by Edge & Node.
+- Follow the [hosted environment](/how-to/hostedenvironment) to transition Amp from local datasets to published datasets hosted by Edge & Node.
 
 ### Interactive Development
 
@@ -201,9 +209,17 @@ Local
 
 - **Foundry Anvil** (local development)
 
-On hosted instance (https://playground.amp.thegraph.com/)
+On [hosted playground](https://playground.amp.thegraph.com/)
 
 - **Ethereum** mainnet
 - **Arbitrum** mainnet
 - **Base** mainnet
 - **Base** Sepolia
+
+## Need Help?
+
+- **[Hosted Environment Guide](/how-to/hostedenvironment)** - Move from querying local datasets to datasets hosted by Edge & Node
+- **[Streaming in SQL Guide](/how-to/streamsql)** - Complete guide to streaming SQL limitations and patterns
+- **[Troubleshooting Guide](/how-to/troubleshoot)** - Troubleshooting guide and detailed command reference
+- **[Configuration Reference](/references/configfile)** - Advanced configuration (object stores, providers, environment variables)
+- **[Operational Modes & Deployment Patterns](/references/operationalmodes)** - Production deployment patterns

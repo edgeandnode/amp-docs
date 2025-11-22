@@ -1,7 +1,6 @@
 ---
 title: Streaming SQL in Amp
 slug: how-to/streamsql
-command: ampd dev
 category: how-to-guide
 ---
 
@@ -147,5 +146,5 @@ These examples illustrate complete, real-world derived table definitions.
 
 ## Need Help?
 
-- SQL syntax reference: DuckDB SQL — https://duckdb.org/docs/sql/introduction
-- Performance tuning: See (Streaming SQL Reference)[]
+- SQL syntax reference: [DuckDB SQL](https://duckdb.org/docs/sql/introduction)
+- Performance tuning: See [Streaming SQL Reference](/references/streamingsql/)

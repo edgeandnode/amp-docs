@@ -1,7 +1,7 @@
 ---
-title: Query Your Smart Contracts with SQL Reference
+title: Smart Contracts with SQL
 description: Understanding how Amp works with sql
-slug: references/sqlbasics
+slug: references/contractsql
 category: references
 ---
 
