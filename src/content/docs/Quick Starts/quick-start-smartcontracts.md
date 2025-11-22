@@ -5,93 +5,109 @@ slug: quickstart/querysmartcontracts
 category: quickstart
 ---
 
-Query your smart contracts with SQL. No backend, no indexers, no setup code.
+Amp automatically transforms your smart contract events into SQL-queryable datasets the moment those events are emitted. There’s no backend to deploy, no indexing code to maintain, and no configuration overhead. Deploy your contract, trigger events, and query the resulting tables immediately using standard SQL. This lets you build real-time dashboards, analytics pipelines, and data-driven applications with the tooling and workflows you already use.
 
-Amp turns Solidity events into SQL tables instantly. Deploy, emit events, and query them right away. Perfect for rapid prototyping, dashboards, analytics, and AI agents.
+Perfect for prototypes, and production applications that need fast access to on-chain data
 
-> This guide uses the TypeScript SDK.
+This quickstart template walks you from install to your first on-chain SQL query in minutes. You can:
+
+- Query blockchain data using SQL (both from the CLI and in your app)
+- Create custom datasets by combining and transforming on-chain data
+- Build a React app that displays live blockchain data
+
+> To understand the specifics, see (Ampup Basics)[]/
 
 ## 1. Install Prerequisites
 
-Make sure you have Docker running. Then install:
+Make sure Docker is running. Then install:
 
 ### Node and Pnpm
 
 - Node.js (v22+)
 - Pnpm (v10+)
 
-> Verify with node `--version` and pnpm `--version`. Older versions may cause issues.
+> Verify with
+
+```bash
+node --version
+pnpm --version
+```
+
+Older versions may cause issues.
 
 ### Foundry
+
+For smart constract development
 
 ```bash
 curl -L https://foundry.paradigm.xyz | bash && foundryup
 ```
 
-### Just (task runner)
+### Just (as task runner)
 
 ```bash
 cargo install just
 ```
 
-### Amp CLI
+### Amp
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://ampup.sh/install | sh
 ```
 
-## 2. Clone the Starter Template
+## 2. Quickstart
+
+### 1. Close Started Template
 
 ```bash
+# Clone with submodules
 git clone --recursive <repository-url>
 cd amp-demo
 ```
 
-### Install project dependencies (frontend, SDK, etc.)
+### 2. Install project dependencies
 
 ```bash
 just install
 ```
 
-## 3. Start Your Local Stack
+### 3. Start Your Local Stack
 
-### Start infra and deploy contracts
+### Start infrastructure and deploy contracts
 
 ```bash
 just up
 ```
 
-### In another terminal: start development servers (frontend + Amp)
+### 4. Start Development serves (frontend + Amp)
 
 ```bash
 just dev
 ```
 
-Open: http://localhost:5173
-Click the counter buttons to emit `Incremented` / `Decremented` events from the `Counter` contract.
+- Open: http://localhost:5173
+- Click the counter buttons to generate transactions.
 
 ## 4. Run Your First SQL Query
 
-In a new terminal (from the `amp-demo` directory):
+In a new terminal, query your dataset:
 
 ```bash
+# See the events your contract emitted
 pnpm amp query 'SELECT * FROM "_/counter@dev".incremented LIMIT 5'
 ```
 
-Datasets use the format `namespace/name@version`
+Amp automatically created a `incremented` SQL table from your smart contract’s `Incremented` event. No indexing code required.
 
-- `"_/counter@dev"` is your local dataset.
-- `@dev` for local development, @latest or @1.0.0 for published datasets
-- `_/` is your personal namespace for local development.
-- `incremented` is the table Amp auto-generated from the `Incremented` event in `Counter.sol`.
+## 5. Create Your First Derived Table (Optional)
 
-Amp auto-created the incremented table from your contract. No indexing code required.
+> To understand specifics to datasets, see (Ampup Basics)[]
 
-## 5. Add a Custom Derived Table
+Raw tables (example: `anvil.blocks`) contain the chain data and are populated for you; with them you can create and deploy derived datasets that pre-compute transformations for faster queries (like a materialized view).
 
-You can define your own tables on top of chain data (like a materialized view).
+### Example: Filtering Blocks
 
-Open `amp.config.ts` and replace its contents with this technically complete config:
+Edit `amp.config.ts` to add a custom table:
 
 ```typescript
 import { defineDataset, eventTables } from "@edgeandnode/amp";
@@ -102,18 +118,17 @@ export default defineDataset(() => {
   const baseTables = eventTables(abi);
 
   return {
+    namespace: "eth_global",
     name: "counter",
     network: "anvil",
     description: "Counter dataset with event tables and custom queries",
-    // Gives access to chain-level data like blocks, txs, logs
     dependencies: {
-      anvil: "_/anvil@0.0.1",
+      anvil: "_/anvil@0.0.1", // Access to blocks, transactions, logs
     },
     tables: {
-      // Auto-generated tables for your contract events
-      ...baseTables,
+      ...baseTables, // Your contract's event tables
 
-      // Custom derived table: only blocks with gas usage > 0
+      // Add a custom derived table
       active_blocks: {
         sql: `
           SELECT
@@ -130,40 +145,33 @@ export default defineDataset(() => {
 });
 ```
 
-Deploy your changes:
+Amp automatically detects changes to `amp.config.ts` and generates your new `active_blocks` table.
 
-```bash
-just down
-just up
-```
-
-Now, query your new table:
+#### Query your new table:
 
 ```bash
 pnpm amp query 'SELECT * FROM "_/counter@dev".active_blocks LIMIT 10'
 ```
 
-## 6. Query Amp from Your App
+#### Filtering for a specific contract:
 
-The frontend (`app/src`) shows how to query Amp datasets from TypeScript using the `@edgeandnode/amp` client library.
-
-Example from `app/src/components/IncrementedEvents.tsx`:
-
-```tsx
-import { useQuery } from "@edgeandnode/amp";
-
-const { data } = useQuery(`
-  SELECT * FROM "_/counter@dev".incremented
-  ORDER BY block_num DESC
-  LIMIT 10
-`);
+```bash
+pnpm amp query 'SELECT * FROM anvil.logs WHERE address = 0xYOUR_CONTRACT_ADDRESS LIMIT 10'
 ```
 
-> Assumes the `incremented` table has columns like `block_num`, `tx_hash`, `log_index`, `new_value` generated from your event fields.
+## 6. Query Amp from Your App
 
-## 7. Explore & Debug Quickly
+The frontend (`app/src`) shows how to query Amp datasets from TypeScript. See [`app/src/components/IncrementTable.tsx`](app/src/components/IncrementTable.tsx) for a complete example.
 
-### Open Amp Studio for web-based queries
+## 7. Hosted Environment
+
+Amp easily transitions from local development to developing on datasets located in a hosted environment.
+
+- Follow the (hosted environment)[guide] to transition Amp from local datasets to published datasets hosted by Edge & Node.
+
+### Interactive Development
+
+Prototype with Amp Studio:
 
 ```bash
 just studio
@@ -178,16 +186,12 @@ just logs
 ### Query from CLI
 
 ```bash
-pnpm amp query 'SELECT * FROM "_/counter@dev".decremented LIMIT 5'
+pnpm amp query 'SELECT * FROM "_/counter@dev".decremented LIMIT 10'
 ```
 
 ## Conclusion
 
-You’re now production-ready:
-
-- Contracts emit events
-- Amp turns them into SQL tables
-- You can query from CLI, Amp Studio, or TypeScript/React
+You’re now ready to build dashboards, analytics tools, agent workflows, or data-driven apps—powered by SQL on on-chain events.
 
 ## Notes
 

@@ -14,7 +14,7 @@ keywords:
   ]
 ---
 
-### Welcome to Amp Docs
+### Welcome to Amp
 
 Amp is Edge & Node’s scalable blockchain database that makes blockchain data usable, verifiable, and enterprise-ready. It converts complex onchain data into structured, queryable insights through SQL-based indexing and analytics—removing latency and manual overhead common in legacy ETL systems.
 
