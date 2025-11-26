@@ -83,5 +83,5 @@ active_blocks: {
 
 ## Need Help?
 
-- SQL syntax reference: DuckDB SQL — https://duckdb.org/docs/sql/introduction
-- Performance tuning: See Performance Tips in (Streaming SQL Guide)[]
+- SQL syntax reference: [DuckDB SQL](https://duckdb.org/docs/sql/introduction)
+- Performance tuning: See Performance Tips in [Streaming SQL Guide](/how-to/streamsql/)

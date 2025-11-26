@@ -147,4 +147,4 @@ These examples illustrate complete, real-world derived table definitions.
 ## Need Help?
 
 - SQL syntax reference: [DuckDB SQL](https://duckdb.org/docs/sql/introduction)
-- Performance tuning: See [Streaming SQL Reference](/references/streamingsql/)
+- Supported and Unsupported Operations: [Streaming SQL Reference](/references/streamingsql/)
