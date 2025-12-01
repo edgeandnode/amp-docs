@@ -13,7 +13,7 @@ This guide explains how to use Amp’s hosted service maintained by [Edge & Node
 ### Benefits
 
 - **No infrastructure**: Skip node management, indexing, and database setup.
-- **Instant queries**: Access mainnet data with SQL immediately.
+- **Instant queries**: Access blockchain data with SQL immediately.
 - **Production ready**: Build applications on reliable, continuously updated datasets.
 - **Composable**: Combine multiple published datasets in a single query.
 
@@ -44,7 +44,7 @@ Visit the Amp Playground to validate data availability:
 ### Step 2: Generate an Auth Token
 
 ```bash
-pnpm amp auth token --duration "3 days"
+pnpm amp auth token "3 days"
 ```
 
 Save the token for CLI queries or environment variables.
@@ -108,11 +108,10 @@ Migrate your local dataset to a hosted network.
 - Contract deployed to the target network
 - ABI matches the deployed contract
 
-Amp handles indexing when your dataset depends on a published raw dataset.
 
 ### Step 1: Configure Environment
 
-``bash
+```bash
 cp .env.example .env
 
 ````
@@ -121,7 +120,7 @@ Enable the target network:
 ```bash
 VITE_AMP_RPC_DATASET=edgeandnode/ethereum_mainnet@0.0.1
 VITE_AMP_NETWORK=ethereum-mainnet
-````
+```
 
 ### Step 2: Update Dataset Config
 
@@ -151,7 +150,7 @@ pnpm amp build -o /tmp/test-manifest.json
 Generate Token
 
 ```bash
-pnpm amp auth token --duration "3 days"
+pnpm amp auth token "3 days"
 ```
 
 Verify Connectivity
@@ -239,7 +238,7 @@ Dataset URL:
 Generate a long-lived token for your application:
 
 ```bash
-pnpm amp auth token --duration "30 days"
+pnpm amp auth token "30 days"
 ```
 
 Copy the token and update your `.env`:
