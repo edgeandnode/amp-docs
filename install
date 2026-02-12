@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+
+# This is just a little script that can be downloaded from the internet to
+# install `ampup`. It just does platform detection, downloads the installer
+# and runs it.
+
+main() {
+	require uname curl mktemp chmod rm rmdir
+
+	local platform
+	platform="$(get_platform)"
+	local arch
+	arch="$(get_architecture)"
+	info "Downloading ampup"
+	detail "Platform: ${platform}, Architecture: ${arch}"
+
+	# Download
+	local tmpdir
+	tmpdir="$(ensure mktemp -d)"
+	local tmpbin="${tmpdir}/ampup"
+	download_asset "ampup-${platform}-${arch}" "${tmpbin}"
+
+	# Initialize
+	ensure chmod +x "${tmpbin}"
+	ensure "${tmpbin}" init "$@"
+
+	# Cleanup
+	ignore rm "${tmpbin}"
+	ignore rmdir "${tmpdir}"
+}
+
+download_asset() {
+	local artifact="$1"
+	local output="$2"
+	local url="https://github.com/edgeandnode/amp/releases/latest/download/${artifact}"
+	ensure curl --proto =https --tlsv1.2 --silent --show-error --fail --location "${url}" --output "${output}"
+}
+
+get_platform() {
+	local platform
+	platform="$(ensure uname -s)"
+	case ${platform} in
+		Linux) echo "linux" ;;
+		Darwin) echo "darwin" ;;
+		*) die "Unsupported platform: ${platform}" ;;
+	esac
+}
+
+get_architecture() {
+	local arch
+	arch="$(ensure uname -m)"
+	case ${arch} in
+		x86_64 | amd64) echo "x86_64" ;;
+		arm64 | aarch64) echo "aarch64" ;;
+		*) die "Unsupported architecture: ${arch}" ;;
+	esac
+}
+
+info() {
+	printf "\033[0;36m→\033[0m %s\n" "$1"
+}
+
+detail() {
+	printf "\033[0;2m  %s\033[0m\n" "$1"
+}
+
+error() {
+	printf "\033[0;31;1m✗\033[0m %s\n" "$1" >&2
+}
+
+require() {
+	for cmd in "$@"; do
+		command -v "${cmd}" >/dev/null 2>&1 || die "Required command not found: ${cmd}"
+	done
+}
+
+ensure() {
+	"$@" || die "Command failed: $*"
+}
+
+ignore() {
+	"$@"
+}
+
+die() {
+	error "$1"
+	exit 1
+}
+
+main "$@"

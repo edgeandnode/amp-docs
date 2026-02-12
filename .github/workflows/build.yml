@@ -1,0 +1,269 @@
+name: Build
+on:
+  push:
+    branches: ["main"]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  cancel-in-progress: ${{ github.ref_type == 'branch' }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+
+jobs:
+  metadata:
+    name: Metadata
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      name: ${{ steps.meta.outputs.name }}
+      latest: ${{ steps.meta.outputs.latest }}
+      version: ${{ steps.meta.outputs.version }}
+      release: ${{ steps.meta.outputs.release }}
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Compute release metadata
+        id: meta
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            tag="${GITHUB_REF_NAME}"
+            name="${GITHUB_REF_NAME}"
+            latest="true"
+            version="${GITHUB_REF_NAME}"
+            release="true"
+          else
+            tag="${GITHUB_REF_NAME}"
+            name="${GITHUB_REF_NAME}"
+            latest="false"
+            version="${GITHUB_SHA}"
+            release="false"
+          fi
+
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "name=${name}" >> "$GITHUB_OUTPUT"
+          echo "latest=${latest}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "release=${release}" >> "$GITHUB_OUTPUT"
+
+  build-linux:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: namespace-profile-linux-amd64-build
+            target: x86_64-unknown-linux-gnu
+          - runner: namespace-profile-linux-arm64-build
+            target: aarch64-unknown-linux-gnu
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Setup rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@1780873c7b576612439a134613cc4cc74ce5538c # v1
+        with:
+          target: ${{ matrix.target }}
+          cache: true
+          cache-shared-key: rust-${{ matrix.target }}
+          cache-on-failure: true
+          rustflags: ""
+
+      - name: Install mold
+        uses: rui314/setup-mold@725a8794d15fc7563f59595bd9556495c0564878 # v1
+
+      - name: Build binaries
+        run: |
+          export RUSTFLAGS="-C link-arg=-fuse-ld=mold ${RUSTFLAGS}"
+          cargo build --target ${{ matrix.target }} --release -v -p ampup
+
+      - name: Compress debug sections (Linux only)
+        if: contains(matrix.target, 'linux')
+        run: |
+          path="target/${{ matrix.target }}/release/ampup"
+          size_before=$(stat -c%s "$path")
+          objcopy --compress-debug-sections=zlib-gnu "$path"
+          size_after=$(stat -c%s "$path")
+          echo "ampup: $size_before -> $size_after bytes"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: ${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/ampup
+          compression-level: 0
+          retention-days: 30
+
+  build-macos:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: namespace-profile-macos-arm64-build
+            target: x86_64-apple-darwin
+          - runner: namespace-profile-macos-arm64-build
+            target: aarch64-apple-darwin
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Setup rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@1780873c7b576612439a134613cc4cc74ce5538c # v1
+        with:
+          target: ${{ matrix.target }}
+          cache: true
+          cache-shared-key: rust-${{ matrix.target }}
+          cache-on-failure: true
+          rustflags: ""
+
+      - name: Build binaries
+        run: cargo build --target ${{ matrix.target }} --release -v -p ampup
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: ${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/ampup
+          compression-level: 0
+          retention-days: 30
+
+  notarize:
+    name: Sign and Notarize (${{ matrix.target }})
+    needs: [metadata, build-macos]
+    runs-on: ubuntu-latest
+    if: needs.metadata.outputs.release == 'true'
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [x86_64-apple-darwin, aarch64-apple-darwin]
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Download artifact
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: ${{ matrix.target }}
+          path: ./binaries/
+
+      - name: Setup signing certificate
+        run: echo "${{ secrets.APPLE_CERT_DATA }}" | base64 -d > certificate.p12
+
+      - name: Setup App Store Connect API Key
+        run: echo "${{ secrets.APPLE_APP_STORE_CONNECT_API_KEY_JSON }}" | base64 -d > key.json
+
+      - name: Sign binary
+        uses: indygreg/apple-code-sign-action@a00d97f64dc70cb0e9bbc1e5f13d1892dd1c333a
+        with:
+          input_path: binaries/ampup
+          sign: true
+          p12_file: certificate.p12
+          p12_password: ${{ secrets.APPLE_CERT_PASSWORD }}
+          sign_args: |
+            --code-signature-flags
+            runtime
+            --entitlements-xml-file
+            entitlements.plist
+
+      - name: Create ZIP for notarization
+        run: |
+          cd binaries
+          zip ampup.zip ampup
+
+      - name: Notarize binary
+        uses: indygreg/apple-code-sign-action@a00d97f64dc70cb0e9bbc1e5f13d1892dd1c333a
+        with:
+          input_path: binaries/ampup.zip
+          sign: false
+          notarize: true
+          app_store_connect_api_key_json_file: key.json
+
+      - name: Extract notarized binary
+        run: |
+          cd binaries
+          unzip -o ampup.zip
+          rm ampup.zip
+
+      - name: Upload notarized artifact
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: ${{ matrix.target }}-notarized
+          path: binaries/ampup
+          compression-level: 0
+          retention-days: 30
+
+  release:
+    name: Release
+    needs: [metadata, build-linux, notarize]
+    runs-on: ubuntu-latest
+    if: needs.metadata.outputs.release == 'true'
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          path: artifacts
+          pattern: "*-unknown-linux-gnu"
+
+      - name: Download notarized macOS artifacts
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          path: artifacts
+          pattern: "*-apple-darwin-notarized"
+
+      - name: Prepare release binaries
+        run: |
+          # Organize binaries for release
+          mkdir -p release
+
+          # Copy and rename ampup binaries
+          cp artifacts/x86_64-unknown-linux-gnu/ampup release/ampup-linux-x86_64
+          cp artifacts/aarch64-unknown-linux-gnu/ampup release/ampup-linux-aarch64
+          cp artifacts/x86_64-apple-darwin-notarized/ampup release/ampup-darwin-x86_64
+          cp artifacts/aarch64-apple-darwin-notarized/ampup release/ampup-darwin-aarch64
+
+          # Make all binaries executable
+          chmod +x release/*
+
+          # Verify binaries exist
+          ls -la release/
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
+        with:
+          files: release/*
+          fail_on_unmatched_files: true
+          draft: true
+          tag_name: ${{ needs.metadata.outputs.tag }}
+          name: ${{ needs.metadata.outputs.name }}
+          generate_release_notes: true
+          target_commitish: ${{ github.sha }}
+
+      - name: Finalize release
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
+        with:
+          draft: false
+          tag_name: ${{ needs.metadata.outputs.tag }}
+          name: ${{ needs.metadata.outputs.name }}
+          target_commitish: ${{ github.sha }}
+          make_latest: ${{ needs.metadata.outputs.latest == 'true' }}

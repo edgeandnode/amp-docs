@@ -1,0 +1,38 @@
+[package]
+name = "ampup"
+version = "0.1.0"
+edition = "2024"
+license-file = "../LICENSE"
+
+[lib]
+name = "ampup"
+
+[[bin]]
+name = "ampup"
+
+[dependencies]
+anyhow = "1.0.80"
+clap = { version = "4.5.2", features = ["derive", "env"] }
+fs-err = "3.0.0"
+futures = "0.3"
+reqwest = { version = "0.13", default-features = false, features = [
+    "json",
+    "query",
+    "rustls",
+    "stream",
+] }
+semver = { version = "1.0.18", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+tempfile = "3.13.0"
+tokio = { version = "1.36.0", features = [
+    "macros",
+    "test-util",
+    "rt-multi-thread",
+    "parking_lot",
+] }
+indicatif = "0.18"
+console = "0.16"
+dialoguer = "0.12"
+
+[build-dependencies]
+vergen-gitcl = { version = "9.0.0", features = ["build"] }

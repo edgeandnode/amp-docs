@@ -1,0 +1,86 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: full
+
+jobs:
+  ampup-tests:
+    name: Test ampup
+    runs-on: namespace-profile-linux-default
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - uses: actions-rust-lang/setup-rust-toolchain@1780873c7b576612439a134613cc4cc74ce5538c # v1
+        with:
+          cache: true
+          rustflags: ""
+
+      - name: Setup just
+        uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff # v3
+
+      - name: Install cargo-nextest
+        uses: baptiste0928/cargo-install@b687c656bda5733207e629b50a22bf68974a0305 # v3
+        with:
+          crate: cargo-nextest
+          version: ^0.9
+
+      - name: Run ampup tests
+        run: just test --verbose
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  rustfmt:
+    name: Check rustfmt style
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@1780873c7b576612439a134613cc4cc74ce5538c # v1
+        with:
+          toolchain: nightly # Required for unstable features (see `rustfmt.toml` for details)
+          components: rustfmt
+          cache: true
+          rustflags: ""
+
+      - name: Setup just
+        uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff # v3
+
+      - name: Check formatting
+        run: just fmt-rs-check
+
+  release-check:
+    name: Build in release mode
+    runs-on: namespace-profile-linux-default
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - uses: actions-rust-lang/setup-rust-toolchain@1780873c7b576612439a134613cc4cc74ce5538c # v1
+        with:
+          cache: true
+          rustflags: ""
+
+      - name: Setup just
+        uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff # v3
+
+      - name: Cargo check (release)
+        run: just check-rs --release --all-features
+
+      - name: Run clippy (release)
+        run: just clippy --release --all-features

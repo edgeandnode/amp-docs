@@ -1,0 +1,63 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: local
+  hooks:
+  ## Rust hooks
+  - id: fmt-rs
+    name: Format Rust code
+    language: system
+    entry: just fmt-rs
+    types_or: [rust, cargo, cargo-lock]
+    stages: [pre-commit, pre-merge-commit, manual]
+    pass_filenames: false
+    require_serial: true
+  - id: fmt-rs-check
+    name: Check Rust code formatting
+    language: system
+    entry: just fmt-rs-check
+    types_or: [rust, cargo, cargo-lock]
+    stages: [pre-push, manual]
+    pass_filenames: false
+    require_serial: true
+  - id: check-rs
+    name: Check all crates for compilation errors
+    language: system
+    entry: just check-rs
+    types_or: [rust, cargo, cargo-lock]
+    stages: [pre-push, manual]
+    pass_filenames: false
+    require_serial: true
+  - id: clippy
+    name: Lint Rust code with clippy
+    language: system
+    entry: just clippy
+    types_or: [rust, cargo, cargo-lock]
+    stages: [pre-push, manual]
+    pass_filenames: false
+    require_serial: true
+  ## Shell hooks
+  - id: fmt-sh
+    name: Format shell scripts
+    language: system
+    entry: just fmt-sh
+    types: [shell]
+    stages: [pre-commit, pre-merge-commit, manual]
+    pass_filenames: false
+    require_serial: true
+  - id: fmt-sh-check
+    name: Check shell script formatting
+    language: system
+    entry: just fmt-sh-check
+    types: [shell]
+    stages: [pre-push, manual]
+    pass_filenames: false
+    require_serial: true
+  - id: check-sh
+    name: Lint shell scripts with shellcheck
+    language: system
+    entry: just check-sh
+    types: [shell]
+    stages: [pre-push, manual]
+    pass_filenames: false
+    require_serial: true

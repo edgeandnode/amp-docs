@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "ampup",
+]
+resolver = "3"
