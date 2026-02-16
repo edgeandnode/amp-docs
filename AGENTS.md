@@ -33,7 +33,7 @@ pnpm preview
   - Content collections configured in `src/content.config.ts`
 - **Installer**: `public/install` - shell script that downloads and installs ampup binary
   - Detects platform (Linux/Darwin) and architecture (x86_64/aarch64)
-  - Downloads from GitHub releases: `github.com/edgeandnode/amp/releases/latest`
+  - Downloads from GitHub releases: `github.com/edgeandnode/ampup/releases/latest`
   - Served at `https://ampup.sh/install`
 
 ## Key Components
