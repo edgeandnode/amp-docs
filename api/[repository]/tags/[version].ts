@@ -1,7 +1,7 @@
 const repositories = ['amp', 'ampup'];
 
 export async function GET(request: Request) {
-  const [, repository, , version] = new URL(request.url).pathname.split('/');
+  const [, , repository, , version] = new URL(request.url).pathname.split('/');
   if (!version || !repositories.includes(repository)) {
     return new Response(undefined, { status: 400 });
   }
