@@ -1,15 +1,12 @@
-const REPOSITORY = 'edgeandnode/amp';
+const repositories = ['amp', 'ampup'];
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const parts = url.pathname.split('/');
-  const version = parts[parts.length - 1];
-
-  if (!version) {
+  const [, repository, , version] = new URL(request.url).pathname.split('/');
+  if (!version || !repositories.includes(repository)) {
     return new Response(undefined, { status: 400 });
   }
 
-  const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/releases/tags/${version}`, {
+  const response = await fetch(`https://api.github.com/repos/edgeandnode/${repository}/releases/tags/${version}`, {
     headers: {
       'Accept': 'application/vnd.github.v3+json',
       'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
