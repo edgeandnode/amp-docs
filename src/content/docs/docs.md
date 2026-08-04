@@ -18,15 +18,11 @@ keywords:
 
 Amp is Edge & Node’s scalable blockchain database that makes blockchain data usable, verifiable, and enterprise-ready. It converts complex onchain data into structured, queryable insights through SQL-based indexing and analytics—removing latency and manual overhead common in legacy ETL systems.
 
-Amp provides a secure, compliant platform where teams can extract, transform, and query blockchain data entirely in SQL. Using the Amp CLI and Local Studio, developers can rapidly prototype, deploy, and scale blockchain data products without managing backend infrastructure.
-
 ## Why Amp?
 
 
 - Traditional database systems are inflexible and scale poorly for blockchain use cases
 - No native support for AI or blockchain interoperability. Many systems are cobbled together off-the-shelf solutions.
-
-> To get started, check out [Quickstart: Query Smart Contract with SQL](quickstart/querysmartcontracts)
 
 ### Amp addresses these gaps with:
 
